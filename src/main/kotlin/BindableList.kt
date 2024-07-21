@@ -43,13 +43,13 @@ class BindableList<T>(list: Collection<T>) {
     fun setIndex(index: Int, item: T) {
         innerList[index] = item
         updateListener.forEach { it.unit.invoke() }
-        changeListener.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(item)) }
+        changeListener.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
     }
 
     operator fun contains(target: T): Boolean = values.contains(target)
 
     class BindableListUpdateEvent<T>(val item: T?)
-    class BindableListItemChangeEvent<T>(val item: T)
+    class BindableListItemChangeEvent<T>(val index: Int, val item: T)
     class BindableListItemAddEvent<T>(val item: T)
     class BindableListItemRemovedEvent<T>(val item: T)
 
