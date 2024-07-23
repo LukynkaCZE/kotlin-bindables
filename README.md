@@ -51,12 +51,12 @@ dependencies {
 ---
 
 ## Usage
-~~~~
+
 There are different types of bindables, each with their own events
 
 **_Bindable_**
 ```kotlin
-    // give initial value of 5
+// give initial value of 5
 val playerHealth = Bindable<Int>(5)
 
 // Register a listener
