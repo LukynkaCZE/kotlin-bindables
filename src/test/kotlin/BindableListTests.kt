@@ -52,6 +52,28 @@ class BindableListTests {
     }
 
     @Test
+    fun testClear() {
+        val list = BindableList<String>("test", "woah", "very testing", "yes")
+        var removeCount = 0
+        list.itemRemoved { removeCount++ }
+
+        list.clear()
+
+        assertEquals(4, removeCount)
+    }
+
+    @Test
+    fun testClearSilent() {
+        val list = BindableList<String>("test", "woah", "very testing", "yes")
+        var removeCount = 0
+        list.itemRemoved { removeCount++ }
+
+        list.clear(true)
+
+        assertEquals(0, removeCount)
+    }
+
+    @Test
     fun testAddIfNotPresentRemoveIfPresent() {
         val list = BindableList<Int>(1, 2, 3, 5, 7)
 
@@ -61,5 +83,65 @@ class BindableListTests {
         list.removeIfPresent(9)
 
         assertEquals(listOf(1, 2, 3, 5, 4), list.values)
+    }
+
+    @Test
+    fun testLifecycleUnregister() {
+        var updateCount: Int = 0
+        var addCount: Int = 0
+        var removeCount: Int = 0
+        var changeCount: Int = 0
+        val bindable: BindableList<String> = BindableList()
+
+        val addListener = bindable.itemAdded { addCount++ } // 2
+        val removeListener = bindable.itemRemoved { removeCount++ } // 1
+        val changeListener = bindable.itemChanged { changeCount++ } // 1
+        val updateListener = bindable.listUpdated { updateCount++ } // 3
+
+        bindable.add("test")
+        bindable.setIndex(0, "test1")
+        bindable.remove("test1")
+
+        bindable.unregister(removeListener)
+        bindable.unregister(changeListener)
+        bindable.unregister(updateListener)
+
+        bindable.add("test")
+        bindable.setIndex(0, "test1")
+        bindable.remove("test1")
+
+        assertEquals(2, addCount)
+        assertEquals(1, removeCount)
+        assertEquals(1, changeCount)
+        assertEquals(3, updateCount)
+    }
+
+    @Test
+    fun testLifecycleDispose() {
+        var updateCount: Int = 0
+        var addCount: Int = 0
+        var removeCount: Int = 0
+        var changeCount: Int = 0
+        val bindable: BindableList<String> = BindableList()
+
+        val addListener = bindable.itemAdded { addCount++ } // 1
+        val removeListener = bindable.itemRemoved { removeCount++ } // 1
+        val changeListener = bindable.itemChanged { changeCount++ } // 1
+        val updateListener = bindable.listUpdated { updateCount++ } // 3
+
+        bindable.add("test")
+        bindable.setIndex(0, "test1")
+        bindable.remove("test1")
+
+        bindable.dispose()
+
+        bindable.add("test")
+        bindable.setIndex(0, "test1")
+        bindable.remove("test1")
+
+        assertEquals(1, addCount)
+        assertEquals(1, removeCount)
+        assertEquals(1, changeCount)
+        assertEquals(3, updateCount)
     }
 }

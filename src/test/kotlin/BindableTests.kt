@@ -69,4 +69,45 @@ class BindableTests {
 
         assertEquals(expected, string)
     }
+
+    @Test
+    fun testLifecycleUnregister() {
+        val bindable: Bindable<String> = Bindable("Testing :3")
+        var newValue: String? = null
+
+        val listener = bindable.valueChanged {
+            newValue = it.newValue
+        }
+        bindable.value = "Value 1"
+        bindable.unregister(listener)
+        bindable.value = "newValue should not be this"
+        assertEquals("Value 1", newValue)
+    }
+
+    @Test
+    fun testLifecycleDispose() {
+        val bindable: Bindable<String> = Bindable("Testing :3")
+        var newValue1: String? = null
+        var newValue2: String? = null
+        var newValue3: String? = null
+
+        bindable.valueChanged {
+            newValue1 = it.newValue
+        }
+
+        bindable.valueChanged {
+            newValue2 = it.newValue
+        }
+
+        bindable.valueChanged {
+            newValue3 = it.newValue
+        }
+
+        bindable.value = "Value 1"
+        bindable.dispose()
+        bindable.value = "newValue should not be this"
+        assertEquals("Value 1", newValue1)
+        assertEquals("Value 1", newValue2)
+        assertEquals("Value 1", newValue3)
+    }
 }

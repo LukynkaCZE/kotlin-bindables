@@ -5,9 +5,9 @@ class BindableMap<T, V>(map: Map<T, V>) {
     constructor(vararg list: Pair<T, V>): this(list.toMap())
 
     private var innerMap: MutableMap<T, V> = mutableMapOf()
-    private var removeListener = mutableListOf<BindableMapItemRemoveListener<T, V>>()
-    private var changeListener = mutableListOf<BindableMapItemChangeListener<T, V>>()
-    private var updateListener = mutableListOf<BindableMapUpdateListener<T, V>>()
+    private var removeListeners = mutableListOf<BindableMapItemRemoveListener<T, V>>()
+    private var changeListeners = mutableListOf<BindableMapItemChangeListener<T, V>>()
+    private var updateListeners = mutableListOf<BindableMapUpdateListener<T, V>>()
 
     init {
         map.forEach(innerMap::put)
@@ -30,14 +30,14 @@ class BindableMap<T, V>(map: Map<T, V>) {
     fun remove(key: T) {
         val item = innerMap[key] ?: return
         innerMap.remove(key)
-        removeListener.forEach { it.unit.invoke(BindableMapItemRemovedEvent<T, V>(key, item)) }
-        updateListener.forEach { it.unit.invoke() }
+        removeListeners.forEach { it.unit.invoke(BindableMapItemRemovedEvent<T, V>(key, item)) }
+        updateListeners.forEach { it.unit.invoke() }
     }
 
     operator fun set(key: T, value: V) {
         innerMap[key] = value
-        changeListener.forEach { it.unit.invoke(BindableMapItemSetEvent<T, V>(key, value)) }
-        updateListener.forEach { it.unit.invoke() }
+        changeListeners.forEach { it.unit.invoke(BindableMapItemSetEvent<T, V>(key, value)) }
+        updateListeners.forEach { it.unit.invoke() }
     }
 
     operator fun contains(target: T): Boolean = values.contains(target)
@@ -45,16 +45,22 @@ class BindableMap<T, V>(map: Map<T, V>) {
     class BindableMapItemSetEvent<T, V>(val key: T, val value: V)
     class BindableMapItemRemovedEvent<T, V>(val key: T, val value: V)
 
-    fun itemRemoved(function: (event: BindableMapItemRemovedEvent<T, V>) -> Unit) {
-        removeListener.add(BindableMapItemRemoveListener(function))
+    fun itemRemoved(function: (event: BindableMapItemRemovedEvent<T, V>) -> Unit): BindableMapItemRemoveListener<T, V> {
+        val listener = BindableMapItemRemoveListener(function)
+        removeListeners.add(listener)
+        return listener
     }
 
-    fun itemSet(function: (event: BindableMapItemSetEvent<T, V>) -> Unit) {
-        changeListener.add(BindableMapItemChangeListener(function))
+    fun itemSet(function: (event: BindableMapItemSetEvent<T, V>) -> Unit): BindableMapItemChangeListener<T, V> {
+        val listener = BindableMapItemChangeListener(function)
+        changeListeners.add(listener)
+        return listener
     }
 
-    fun mapUpdated(function: () -> Unit) {
-        updateListener.add(BindableMapUpdateListener(function))
+    fun mapUpdated(function: () -> Unit): BindableMapUpdateListener<T, V> {
+        val listener = BindableMapUpdateListener<T, V>(function)
+        updateListeners.add(listener)
+        return listener
     }
 
     fun setSilently(key: T, value: V) {
@@ -66,26 +72,34 @@ class BindableMap<T, V>(map: Map<T, V>) {
     }
 
     fun triggerUpdate() {
-        updateListener.forEach { it.unit.invoke() }
+        updateListeners.forEach { it.unit.invoke() }
     }
 
     operator fun get(slot: T): V? = innerMap[slot]
 
     fun clear(silent: Boolean = false) {
-        val map = innerMap.toMutableMap()
-        map.forEach {
-            if(silent) {
-                innerMap.remove(it.key)
-            } else {
-                remove(it.key)
-            }
-        }
-        updateListener.forEach { it.unit.invoke() }
+        if(silent) innerMap.clear() else values.forEach { remove(it.key) }
     }
 
     override fun toString(): String = values.toString()
 
-    class BindableMapItemRemoveListener<T, V>(val unit: (list: BindableMapItemRemovedEvent<T, V>) -> Unit)
-    class BindableMapItemChangeListener<T, V>(val unit: (list: BindableMapItemSetEvent<T, V>) -> Unit)
-    class BindableMapUpdateListener<T, V>(val unit: () -> Unit)
+    fun dispose() {
+        removeListeners.clear()
+        changeListeners.clear()
+        updateListeners.clear()
+    }
+
+    fun unregister(listener: BindableMapListener) {
+        when(listener) {
+            is BindableMapItemChangeListener<*, *> -> changeListeners.remove(listener)
+            is BindableMapItemRemoveListener<*, *> -> removeListeners.remove(listener)
+            is BindableMapUpdateListener<*, *> -> updateListeners.remove(listener)
+        }
+    }
+
+    class BindableMapItemRemoveListener<T, V>(val unit: (list: BindableMapItemRemovedEvent<T, V>) -> Unit): BindableMapListener
+    class BindableMapItemChangeListener<T, V>(val unit: (list: BindableMapItemSetEvent<T, V>) -> Unit): BindableMapListener
+    class BindableMapUpdateListener<T, V>(val unit: () -> Unit): BindableMapListener
+
+    interface BindableMapListener
 }

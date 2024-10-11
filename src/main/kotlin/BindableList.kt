@@ -6,9 +6,9 @@ class BindableList<T>(list: Collection<T>) {
 
     private var innerList: MutableList<T> = mutableListOf()
     private var addListeners = mutableListOf<BindableListItemAddListener<T>>()
-    private var removeListener = mutableListOf<BindableListItemRemoveListener<T>>()
-    private var changeListener = mutableListOf<BindableListItemChangeListener<T>>()
-    private var updateListener = mutableListOf<BindableListUpdateListener<T>>()
+    private var removeListeners = mutableListOf<BindableListItemRemoveListener<T>>()
+    private var changeListeners = mutableListOf<BindableListItemChangeListener<T>>()
+    private var updateListeners = mutableListOf<BindableListUpdateListener<T>>()
 
     init {
         list.forEach(innerList::add)
@@ -23,7 +23,7 @@ class BindableList<T>(list: Collection<T>) {
     fun add(item: T) {
         innerList.add(item)
         addListeners.forEach { it.unit.invoke(BindableListItemAddEvent<T>(item)) }
-        updateListener.forEach { it.unit.invoke() }
+        updateListeners.forEach { it.unit.invoke() }
     }
 
     fun addIfNotPresent(item: T) {
@@ -36,14 +36,14 @@ class BindableList<T>(list: Collection<T>) {
 
     fun remove(item: T) {
         innerList.remove(item)
-        updateListener.forEach { it.unit.invoke() }
-        removeListener.forEach { it.unit.invoke(BindableListItemRemovedEvent<T>(item)) }
+        updateListeners.forEach { it.unit.invoke() }
+        removeListeners.forEach { it.unit.invoke(BindableListItemRemovedEvent<T>(item)) }
     }
 
     fun setIndex(index: Int, item: T) {
         innerList[index] = item
-        updateListener.forEach { it.unit.invoke() }
-        changeListener.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
+        updateListeners.forEach { it.unit.invoke() }
+        changeListeners.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
     }
 
     operator fun contains(target: T): Boolean = values.contains(target)
@@ -53,35 +53,65 @@ class BindableList<T>(list: Collection<T>) {
     class BindableListItemAddEvent<T>(val item: T)
     class BindableListItemRemovedEvent<T>(val item: T)
 
-    fun itemAdded(function: (event: BindableListItemAddEvent<T>) -> Unit) {
-        addListeners.add(BindableListItemAddListener(function))
+    fun itemAdded(function: (event: BindableListItemAddEvent<T>) -> Unit): BindableListItemAddListener<T> {
+        val listener = BindableListItemAddListener(function)
+        addListeners.add(listener)
+        return listener
     }
 
-    fun itemRemoved(function: (event: BindableListItemRemovedEvent<T>) -> Unit) {
-        removeListener.add(BindableListItemRemoveListener(function))
+    fun itemRemoved(function: (event: BindableListItemRemovedEvent<T>) -> Unit): BindableListItemRemoveListener<T> {
+        val listener = BindableListItemRemoveListener(function)
+        removeListeners.add(listener)
+        return listener
     }
 
-    fun itemChanged(function: (event: BindableListItemChangeEvent<T>) -> Unit) {
-        changeListener.add(BindableListItemChangeListener(function))
+    fun itemChanged(function: (event: BindableListItemChangeEvent<T>) -> Unit): BindableListItemChangeListener<T> {
+        val listener = BindableListItemChangeListener<T>(function)
+        changeListeners.add(listener)
+        return listener
     }
 
-    fun listUpdated(function: () -> Unit) {
-        updateListener.add(BindableListUpdateListener(function))
+    fun listUpdated(function: () -> Unit): BindableListUpdateListener<T> {
+        val listener = BindableListUpdateListener<T>(function)
+        updateListeners.add(listener)
+        return listener
     }
 
     fun triggerUpdate() {
-        updateListener.forEach { it.unit.invoke() }
+        updateListeners.forEach { it.unit.invoke() }
     }
 
     fun setValues(values: Collection<T>) {
         innerList = values.toMutableList()
-        updateListener.forEach { it.unit.invoke() }
+        updateListeners.forEach { it.unit.invoke() }
+    }
+
+    fun clear(silent: Boolean = false) {
+        if(silent) innerList.clear() else values.forEach(this::remove)
+    }
+
+    fun dispose() {
+        addListeners.clear()
+        removeListeners.clear()
+        changeListeners.clear()
+        updateListeners.clear()
+    }
+
+    fun unregister(listener: BindableListListener) {
+        when(listener) {
+            is BindableListItemAddListener<*> -> addListeners.remove(listener)
+            is BindableListItemRemoveListener<*> -> removeListeners.remove(listener)
+            is BindableListItemChangeListener<*> -> changeListeners.remove(listener)
+            is BindableListUpdateListener<*> -> updateListeners.remove(listener)
+        }
     }
 
     override fun toString(): String = values.toString()
 
-    class BindableListItemAddListener<T>(val unit: (list: BindableListItemAddEvent<T>) -> Unit)
-    class BindableListItemRemoveListener<T>(val unit: (list: BindableListItemRemovedEvent<T>) -> Unit)
-    class BindableListItemChangeListener<T>(val unit: (list: BindableListItemChangeEvent<T>) -> Unit)
-    class BindableListUpdateListener<T>(val unit: () -> Unit)
+    class BindableListItemAddListener<T>(val unit: (list: BindableListItemAddEvent<T>) -> Unit): BindableListListener
+    class BindableListItemRemoveListener<T>(val unit: (list: BindableListItemRemovedEvent<T>) -> Unit): BindableListListener
+    class BindableListItemChangeListener<T>(val unit: (list: BindableListItemChangeEvent<T>) -> Unit): BindableListListener
+    class BindableListUpdateListener<T>(val unit: () -> Unit): BindableListListener
+
+    interface BindableListListener
 }

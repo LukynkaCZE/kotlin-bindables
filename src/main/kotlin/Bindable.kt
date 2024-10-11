@@ -26,12 +26,22 @@ class Bindable<T>(initialValue: T) {
         val newValue: T
     )
 
-    fun valueChanged(unit: (event: ValueChangedEvent<T>) -> Unit) {
-        changeListeners.add(ValueChangeListener<T>(unit))
+    fun valueChanged(unit: (event: ValueChangedEvent<T>) -> Unit): ValueChangeListener<T> {
+        val listener = ValueChangeListener<T>(unit)
+        changeListeners.add(listener)
+        return listener
     }
 
     fun triggerUpdate() {
         changeListeners.forEach { it.unit.invoke(ValueChangedEvent<T>(value, value)) }
+    }
+
+    fun unregister(listener: ValueChangeListener<T>) {
+        changeListeners.remove(listener)
+    }
+
+    fun dispose() {
+        changeListeners.clear()
     }
 
     override fun toString(): String = value.toString()
