@@ -40,6 +40,10 @@ class BindableMap<T, V>(map: Map<T, V>) {
         updateListeners.forEach { it.unit.invoke() }
     }
 
+    fun addAll(map: Map<T, V>, silent: Boolean) {
+        if(silent) innerMap.putAll(map) else map.forEach { set(it.key, it.value) }
+    }
+
     operator fun contains(target: T): Boolean = values.contains(target)
 
     class BindableMapItemSetEvent<T, V>(val key: T, val value: V)

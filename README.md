@@ -148,6 +148,44 @@ playerHealth.value = 20
 playerHealth.dispose()
 ```
 
+### Bindable Pool
+
+In more complicated scenarios, you can create a `BindablePool` class which will keep track of all your bindables:
+
+```kotlin
+val bindablePool = BindablePool()
+
+val playerHealth = pool.provideBindable<Double>(20.0)
+val playerFood = pool.provideBindable<Double>(20.0)
+val playerStamina = pool.provideBindable<Double>(20.0)
+val metadata: pool.provideBindableMap<EntityMetadataType, EntityMetadata>()
+
+playerHealth.valueChanged {
+    player.sendPacket(UpdateHealthPacket(it.newValue))
+}
+
+playerFood.valueChanged {
+  player.sendPacket(UpdateFoodPacket(it.newValue))
+}
+
+playerStamina.valueChanged {
+  player.sendPacket(UpdateStaminaPacket(it.newValue))
+}
+
+metadata.mapUpdated {
+  sendMetadataPacketToViewers()
+  sendSelfMetadataIfPlayer()
+}
+
+// later in your program (when player leaves the server for example)
+bindablePool.dispose() // remove all listeners registered
+```
+
+You can also manually unregister bindable from a pool:
+```kotlin
+bindablePool.unregister(playerStamina)
+```
+
 ---
 
 ### Extras

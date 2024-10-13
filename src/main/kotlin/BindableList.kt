@@ -46,6 +46,10 @@ class BindableList<T>(list: Collection<T>) {
         changeListeners.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
     }
 
+    fun addAll(list: Collection<T>, silent: Boolean) {
+        if(silent) innerList.addAll(list) else list.forEach { add(it) }
+    }
+
     operator fun contains(target: T): Boolean = values.contains(target)
 
     class BindableListUpdateEvent<T>(val item: T?)
