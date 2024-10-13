@@ -55,7 +55,7 @@ There are different types of bindables, each with their own events
 
 ### Bindable
 ```kotlin
-    // give initial value of 5
+// give initial value of 5
 val playerHealth = Bindable<Int>(5)
 
 // Register a listener
