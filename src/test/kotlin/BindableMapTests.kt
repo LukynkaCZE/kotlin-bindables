@@ -81,6 +81,55 @@ class BindableMapTests {
 
         bindableMap.clear(true)
         assertEquals(0, bindableMap.size)
-        assertEquals(1, updateCount)
+        assertEquals(0, updateCount)
+    }
+
+    @Test
+    fun testLifecycleUnregister() {
+        var updateCount: Int = 0
+        var removeCount: Int = 0
+        var setCount: Int = 0
+        val bindable: BindableMap<String, Int> = BindableMap()
+
+        val removeListener = bindable.itemRemoved { removeCount++ } // 2
+        val setListener = bindable.itemSet { setCount++ } // 1
+        val updateListener = bindable.mapUpdated { updateCount++ } // 2
+
+        bindable["money"] = 0
+        bindable.remove("money")
+
+        bindable.unregister(setListener)
+        bindable.unregister(updateListener)
+
+        bindable["money"] = 100000000 // my real bank account money mhm
+        bindable.remove("money")
+
+        assertEquals(2, removeCount)
+        assertEquals(1, setCount)
+        assertEquals(2, updateCount)
+    }
+
+    @Test
+    fun testLifecycleDispose() {
+        var updateCount: Int = 0
+        var removeCount: Int = 0
+        var setCount: Int = 0
+        val bindable: BindableMap<String, Int> = BindableMap()
+
+        val removeListener = bindable.itemRemoved { removeCount++ } // 1
+        val setListener = bindable.itemSet { setCount++ } // 1
+        val updateListener = bindable.mapUpdated { updateCount++ } // 2
+
+        bindable["money"] = 0
+        bindable.remove("money")
+
+        bindable.dispose()
+
+        bindable["money"] = 100000000 // my real bank account money mhm
+        bindable.remove("money")
+
+        assertEquals(1, removeCount)
+        assertEquals(1, setCount)
+        assertEquals(2, updateCount)
     }
 }
