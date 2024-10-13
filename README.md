@@ -31,7 +31,7 @@ repositories {
 }
 
 dependencies {
-    implementation("cz.lukynka:kotlin-bindables:1.1")
+    implementation("cz.lukynka:kotlin-bindables:1.2")
 }
 ```
 <img src="https://github.com/LukynkaCZE/PrettyLog/assets/48604271/3293feca-7395-4100-8b61-257ba40dbe3c" width="18px"></img>
@@ -45,16 +45,15 @@ repositories {
 }
 
 dependencies {
-  implementation 'cz.lukynka:kotlin-bindables:1.1'
+  implementation 'cz.lukynka:kotlin-bindables:1.2'
 }
 ```
 ---
 
 ## Usage
-~~~~
 There are different types of bindables, each with their own events
 
-**_Bindable_**
+### Bindable
 ```kotlin
     // give initial value of 5
 val playerHealth = Bindable<Int>(5)
@@ -68,7 +67,7 @@ playerHealth.valueChanged {
 playerHealth.value = 20
 ```
 
-**_BindableList_**
+### BindableList
 ```kotlin
 val playersOnline = BindableList<String>()
 
@@ -76,7 +75,6 @@ val playersOnline = BindableList<String>()
 playersOnline.itemAdded {
     println("Player ${it.item} has joined!")
 }
-
 
 // called when item gets removed
 playersOnline.itemRemoved {
@@ -91,10 +89,10 @@ playersOnline.itemChanged {
 playersOnline.add("AsoDesu_")
 playersOnline.add("LukynkaCZE")
 playersOnline.remove("AsoDesu_")
-playersOnline.setIndex(1, "ColleiImpact")
+playersOnline.setIndex(1, "KinichAjaw")
 ```
 
-**_BindableMap_**
+### BindableMap
 ```kotlin
 val uuidToPlayerName = BindableMap<UUID, String>()
 
@@ -116,7 +114,38 @@ uuidToPlayerName.mapUpdated {
 uuidToPlayerName[UUID.fromString("aeb19a9c-a64a-4255-bb42-e74f05f9d30f")] = "AsoDesu_"
 uuidToPlayerName[UUID.fromString("0c9151e4-7083-418d-a29c-bbc58f7c741b")] = "LukynkaCZE"
 uuidToPlayerName.remove(UUID.fromString("aeb19a9c-a64a-4255-bb42-e74f05f9d30f"))
-uuidToPlayerName.set(UUID.fromString("0c9151e4-7083-418d-a29c-bbc58f7c741b"), "ColleiImpact")
+uuidToPlayerName.set(UUID.fromString("0c9151e4-7083-418d-a29c-bbc58f7c741b"), "KinichAjaw")
+```
+
+### Unregistering Listeners & Disposing
+
+all event functions provide you back with a listener that you can then unregister at a later time:
+
+```kotlin
+val playerHealth = Bindable<Int>(5)
+
+val playerHealthChangeListener = playerHealth.valueChanged {
+    println("Player health changed from ${it.oldValue} to ${it.newValue}!")
+}
+
+playerHealth.value = 20
+
+// later in your program
+playerHealth.unregister(playerHealthChangeListener)
+```
+
+You can also dispose a bindable using the `dispose` method, this will remove all listeners from it
+```kotlin
+val playerHealth = Bindable<Int>(5)
+
+val playerHealthChangeListener = playerHealth.valueChanged {
+  println("Player health changed from ${it.oldValue} to ${it.newValue}!")
+}
+
+playerHealth.value = 20
+
+//later in your program
+playerHealth.dispose()
 ```
 
 ---
