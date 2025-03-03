@@ -1,4 +1,4 @@
-import cz.lukynka.BindableList
+import cz.lukynka.bindables.BindableList
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,4 +1,4 @@
-import cz.lukynka.BindablePool
+import cz.lukynka.bindables.BindablePool
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

@@ -1,4 +1,4 @@
-package cz.lukynka
+package cz.lukynka.bindables
 
 class BindableList<T>(list: Collection<T>) {
 

@@ -1,4 +1,4 @@
-package cz.lukynka
+package cz.lukynka.bindables
 
 class Bindable<T>(initialValue: T) {
 
@@ -36,7 +36,13 @@ class Bindable<T>(initialValue: T) {
         changeListeners.forEach { it.unit.invoke(ValueChangedEvent<T>(value, value)) }
     }
 
+    @JvmName("unregisterType")
     fun unregister(listener: ValueChangeListener<T>) {
+        changeListeners.remove(listener)
+    }
+
+    @JvmName("unregisterNotTyped")
+    fun unregister(listener: ValueChangeListener<*>) {
         changeListeners.remove(listener)
     }
 
