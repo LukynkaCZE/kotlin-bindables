@@ -1,10 +1,17 @@
-package cz.lukynka
+package cz.lukynka.bindables
 
 class BindablePool {
 
     private val bindables: MutableList<Bindable<*>> = mutableListOf()
     private val bindableLists: MutableList<BindableList<*>> = mutableListOf()
     private val bindableMaps: MutableList<BindableMap<*, *>> = mutableListOf()
+    private val bindableListeners: MutableList<BindableDispatcher<*>> = mutableListOf()
+
+    fun <T> provideBindableListener(): BindableDispatcher<T> {
+        val listener = BindableDispatcher<T>()
+        bindableListeners.add(listener)
+        return listener
+    }
 
     fun <T> provideBindable(defaultValue: T): Bindable<T> {
         val bindable = Bindable<T>(defaultValue)
@@ -34,6 +41,11 @@ class BindablePool {
         return bindableMap
     }
 
+    fun unregister(bindableListener: BindableDispatcher<*>) {
+        bindableListeners.remove(bindableListener)
+        bindableListener.dispose()
+    }
+
     fun unregister(bindable: Bindable<*>) {
         bindables.remove(bindable)
         bindable.dispose()
@@ -50,8 +62,9 @@ class BindablePool {
     }
 
     fun dispose() {
-        bindables.forEach { it.dispose() }
-        bindableLists.forEach { it.dispose() }
-        bindableMaps.forEach { it.dispose() }
+        bindables.forEach { bindable -> bindable.dispose() }
+        bindableLists.forEach { list -> list.dispose() }
+        bindableMaps.forEach { map -> map.dispose() }
+        bindableListeners.forEach { listener -> listener.dispose() }
     }
 }

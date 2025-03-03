@@ -1,4 +1,4 @@
-package cz.lukynka
+package cz.lukynka.bindables
 
 class BindableMap<T, V>(map: Map<T, V>) {
 
