@@ -2,7 +2,7 @@ package cz.lukynka.bindables
 
 class Bindable<T>(initialValue: T) {
 
-    private val changeListeners = mutableListOf<ValueChangeListener<T>>()
+    private val changeListeners = mutableMapOf<ValueChangeListener<T>, Boolean>()
     private var bindableValue = initialValue
 
     var value: T
@@ -10,8 +10,15 @@ class Bindable<T>(initialValue: T) {
         set(value) {
             val oldValue = bindableValue
             bindableValue = value
-            changeListeners.forEach { it.unit.invoke(ValueChangedEvent<T>(oldValue, value)) }
+            changeListeners.forEach { (listener, disposeAfter) ->
+                listener.unit.invoke(ValueChangedEvent<T>(oldValue, value))
+                if(disposeAfter) unregister(listener)
+            }
         }
+
+    fun isValidListener(listener: ValueChangeListener<*>): Boolean {
+        return changeListeners.contains(listener)
+    }
 
     fun setSilently(value: T) {
         this.bindableValue = value
@@ -28,12 +35,21 @@ class Bindable<T>(initialValue: T) {
 
     fun valueChanged(unit: (event: ValueChangedEvent<T>) -> Unit): ValueChangeListener<T> {
         val listener = ValueChangeListener<T>(unit)
-        changeListeners.add(listener)
+        changeListeners[listener] = false
         return listener
     }
 
-    fun triggerUpdate() {
-        changeListeners.forEach { it.unit.invoke(ValueChangedEvent<T>(value, value)) }
+    fun valueChangedThenSelfDispose(unit: (event: ValueChangedEvent<T>) -> Unit): ValueChangeListener<T> {
+        val listener = ValueChangeListener<T>(unit)
+        changeListeners[listener] = true
+        return listener
+    }
+
+    fun triggerUpdate(disposes: Boolean = false) {
+        changeListeners.forEach { (listener, dispose) ->
+            listener.unit.invoke(ValueChangedEvent<T>(value, value))
+            if(disposes && dispose) unregister(listener)
+        }
     }
 
     @JvmName("unregisterType")

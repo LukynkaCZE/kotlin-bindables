@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "cz.lukynka"
-version = "1.4"
+version = "1.5"
 
 repositories {
     mavenCentral()
@@ -66,6 +66,9 @@ publishing {
     }
 }
 
+tasks.withType<PublishToMavenRepository> {
+    dependsOn("test")
+}
 
 tasks.publish {
     finalizedBy("sendPublishWebhook")
@@ -76,7 +79,7 @@ task("sendPublishWebhook") {
     description = "Sends a webhook message after publishing to Maven."
 
     doLast {
-        sendWebhookToDiscord(System.getenv("DISCORD_DOCKYARD_WEBHOOK"))
+        sendWebhookToDiscord(System.getenv("DISCORD_MAYA_WEBHOOK"))
     }
 }
 
