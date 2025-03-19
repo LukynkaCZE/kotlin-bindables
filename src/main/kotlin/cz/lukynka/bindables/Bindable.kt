@@ -1,9 +1,9 @@
 package cz.lukynka.bindables
 
-class Bindable<T>(initialValue: T) {
+class Bindable<T>(var defaultValue: T) {
 
     private val changeListeners = mutableMapOf<ValueChangeListener<T>, Boolean>()
-    private var bindableValue = initialValue
+    private var bindableValue = defaultValue
 
     var value: T
         get() = bindableValue
@@ -37,6 +37,10 @@ class Bindable<T>(initialValue: T) {
         val listener = ValueChangeListener<T>(unit)
         changeListeners[listener] = false
         return listener
+    }
+
+    fun resetToDefaultValue(silent: Boolean = false) {
+        if(silent) setSilently(defaultValue) else this.value = defaultValue
     }
 
     fun valueChangedThenSelfDispose(unit: (event: ValueChangedEvent<T>) -> Unit): ValueChangeListener<T> {

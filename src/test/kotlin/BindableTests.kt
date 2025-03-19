@@ -5,6 +5,19 @@ import kotlin.test.assertEquals
 class BindableTests {
 
     @Test
+    fun testResetToDefaultValue() {
+        val intBindable = Bindable<Int>(5)
+        assertEquals(5, intBindable.value)
+        intBindable.value = 727
+        assertEquals(727, intBindable.value)
+        intBindable.resetToDefaultValue()
+        assertEquals(5, intBindable.value)
+        intBindable.defaultValue = 69
+        intBindable.resetToDefaultValue()
+        assertEquals(69, intBindable.value)
+    }
+
+    @Test
     fun testFireOnceThenDispose() {
         val booleanBindable = Bindable<Boolean>(false)
         var isReady: Boolean = false
