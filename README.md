@@ -14,10 +14,6 @@ Bindables are objects that hold a value and provide following listeners:
   - value set
   - value removed
 
-### why not use kotlin delegate?
-
-To use delegate with decent syntax the library would have to do reflection which is not very good for performance
-
 ## Installation
 
 <img src="https://cdn.worldvectorlogo.com/logos/kotlin-2.svg" width="16px"></img>
@@ -34,20 +30,6 @@ dependencies {
     implementation("cz.lukynka:kotlin-bindables:1.5")
 }
 ```
-<img src="https://github.com/LukynkaCZE/PrettyLog/assets/48604271/3293feca-7395-4100-8b61-257ba40dbe3c" width="18px"></img>
-**Gradle Groovy**
-```groovy
-repositories {
-  maven {
-    name "devOS"
-    url "https://mvn.devos.one/releases"
-  }
-}
-
-dependencies {
-  implementation 'cz.lukynka:kotlin-bindables:1.5'
-}
-```
 ---
 
 ## Usage
@@ -55,7 +37,6 @@ There are different types of bindables, each with their own events
 
 ### Bindable
 ```kotlin
-// give initial value of 5
 val playerHealth = Bindable<Int>(5)
 
 // Register a listener
@@ -66,6 +47,35 @@ playerHealth.valueChanged {
 // Set the value
 playerHealth.value = 20
 ```
+
+#### Binding Bindable<T>s together
+```kotlin
+val x = Bindable<Int>(1)
+val y = Bindable<Int>(2)
+
+x.bindTo(y) 
+assertEquals(x.value, y.value) // bindTo() immediately sets x's value to y's
+
+y.value = 10
+assertEquals(10, x.value) // The value set to y above is propagated to x
+
+x.value = 5
+assertEquals(5, y.value) // Same as above - dual-way communication
+```
+
+You may also use:
+```kotlin
+val x = Bindable<Int>(1)
+val y = x.getBoundCopy()
+
+// or
+
+val x = Bindable<Int>(1)
+val y = Bindable<Int>(2).withBindTo(x)
+```
+
+Note that a Bindable cannot be bound to self or another bindable that is bound to the first bindable. Neither can you bind again when the bindable is already bound. You will need to call `bindable.unbind()` first.
+
 
 ### BindableList
 ```kotlin
@@ -119,7 +129,7 @@ uuidToPlayerName.set(UUID.fromString("0c9151e4-7083-418d-a29c-bbc58f7c741b"), "K
 
 ### Unregistering Listeners & Disposing
 
-all event functions provide you back with a listener that you can then unregister at a later time:
+All event functions provide you back with a listener that you can then unregister at a later time:
 
 ```kotlin
 val playerHealth = Bindable<Int>(5)
@@ -134,7 +144,7 @@ playerHealth.value = 20
 playerHealth.unregister(playerHealthChangeListener)
 ```
 
-You can also dispose a bindable using the `dispose` method, this will remove all listeners from it
+You can also dispose a bindable using the `dispose` method, this will remove all listeners from it and unbind it
 ```kotlin
 val playerHealth = Bindable<Int>(5)
 

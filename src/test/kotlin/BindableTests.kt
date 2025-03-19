@@ -1,8 +1,87 @@
 import cz.lukynka.bindables.Bindable
+import org.junit.jupiter.api.assertThrows
+import java.lang.IllegalStateException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
 class BindableTests {
+
+    @Test
+    fun testRecursionBindThrows() {
+        val x = Bindable<Int>(1)
+        val y = Bindable<Int>(2)
+
+        x.bindTo(y)
+        assertThrows<IllegalStateException> { y.bindTo(x) }
+    }
+
+    @Test
+    fun testBindAgainThrows() {
+        val x = Bindable<Int>(1)
+        val y = Bindable<Int>(2)
+        val z = Bindable<Int>(3)
+
+        x.bindTo(y)
+        assertThrows<IllegalStateException> { x.bindTo(z) }
+    }
+
+    @Test
+    fun testSelfBindingThrows() {
+        val x = Bindable<Int>(1)
+
+        assertThrows<IllegalStateException> { x.bindTo(x) }
+    }
+
+    @Test
+    fun testBindingWithCopy() {
+        val x = Bindable<Int>(1)
+        val y = Bindable<Int>(2).withBindTo(x)
+
+        assertEquals(x.value, y.value)
+
+        y.value = 10
+        assertEquals(10, x.value)
+
+        x.value = 5
+        assertEquals(5, y.value)
+    }
+
+    @Test
+    fun testBindingCopy() {
+        val x = Bindable<Int>(1)
+        val y = x.getBoundCopy()
+
+        assertEquals(x.value, y.value)
+
+        y.value = 10
+        assertEquals(10, x.value)
+
+        x.value = 5
+        assertEquals(5, y.value)
+    }
+
+    @Test
+    fun testBinding() {
+        val x = Bindable<Int>(1)
+        val y = Bindable<Int>(2)
+
+        x.bindTo(y)
+        assertEquals(x.value, y.value)
+
+        y.value = 10
+        assertEquals(10, x.value)
+
+        x.value = 5
+        assertEquals(5, y.value)
+
+        x.resetToDefaultValue()
+        assertEquals(1, y.value)
+
+        x.unbind()
+        x.value = 6
+        assertEquals(6, x.value)
+        assertEquals(1, y.value)
+    }
 
     @Test
     fun testResetToDefaultValue() {
