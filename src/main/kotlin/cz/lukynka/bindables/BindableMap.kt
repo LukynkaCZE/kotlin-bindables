@@ -30,14 +30,14 @@ class BindableMap<T, V>(map: Map<T, V>) {
     fun remove(key: T) {
         val item = innerMap[key] ?: return
         innerMap.remove(key)
-        removeListeners.forEach { it.unit.invoke(BindableMapItemRemovedEvent<T, V>(key, item)) }
-        updateListeners.forEach { it.unit.invoke() }
+        removeListeners.toList().forEach { it.unit.invoke(BindableMapItemRemovedEvent<T, V>(key, item)) }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     operator fun set(key: T, value: V) {
         innerMap[key] = value
-        changeListeners.forEach { it.unit.invoke(BindableMapItemSetEvent<T, V>(key, value)) }
-        updateListeners.forEach { it.unit.invoke() }
+        changeListeners.toList().forEach { it.unit.invoke(BindableMapItemSetEvent<T, V>(key, value)) }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     fun addAll(map: Map<T, V>, silent: Boolean) {
@@ -76,7 +76,7 @@ class BindableMap<T, V>(map: Map<T, V>) {
     }
 
     fun triggerUpdate() {
-        updateListeners.forEach { it.unit.invoke() }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     operator fun get(slot: T): V? = innerMap[slot]

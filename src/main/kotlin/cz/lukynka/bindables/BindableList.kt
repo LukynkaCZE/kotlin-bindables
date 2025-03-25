@@ -11,7 +11,7 @@ class BindableList<T>(list: Collection<T>) {
     private var updateListeners = mutableListOf<BindableListUpdateListener<T>>()
 
     init {
-        list.forEach(innerList::add)
+        list.toList().forEach(innerList::add)
     }
 
     val values: Collection<T>
@@ -22,8 +22,8 @@ class BindableList<T>(list: Collection<T>) {
 
     fun add(item: T) {
         innerList.add(item)
-        addListeners.forEach { it.unit.invoke(BindableListItemAddEvent<T>(item)) }
-        updateListeners.forEach { it.unit.invoke() }
+        addListeners.toList().forEach { it.unit.invoke(BindableListItemAddEvent<T>(item)) }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     fun addIfNotPresent(item: T) {
@@ -36,18 +36,18 @@ class BindableList<T>(list: Collection<T>) {
 
     fun remove(item: T) {
         innerList.remove(item)
-        updateListeners.forEach { it.unit.invoke() }
-        removeListeners.forEach { it.unit.invoke(BindableListItemRemovedEvent<T>(item)) }
+        updateListeners.toList().forEach { it.unit.invoke() }
+        removeListeners.toList().forEach { it.unit.invoke(BindableListItemRemovedEvent<T>(item)) }
     }
 
     fun setIndex(index: Int, item: T) {
         innerList[index] = item
-        updateListeners.forEach { it.unit.invoke() }
-        changeListeners.forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
+        updateListeners.toList().forEach { it.unit.invoke() }
+        changeListeners.toList().forEach { it.unit.invoke(BindableListItemChangeEvent<T>(index, item)) }
     }
 
     fun addAll(list: Collection<T>, silent: Boolean) {
-        if(silent) innerList.addAll(list) else list.forEach { add(it) }
+        if(silent) innerList.addAll(list) else list.toList().forEach { add(it) }
     }
 
     operator fun contains(target: T): Boolean = values.contains(target)
@@ -82,16 +82,16 @@ class BindableList<T>(list: Collection<T>) {
     }
 
     fun triggerUpdate() {
-        updateListeners.forEach { it.unit.invoke() }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     fun setValues(values: Collection<T>) {
         innerList = values.toMutableList()
-        updateListeners.forEach { it.unit.invoke() }
+        updateListeners.toList().forEach { it.unit.invoke() }
     }
 
     fun clear(silent: Boolean = false) {
-        if(silent) innerList.clear() else values.forEach(this::remove)
+        if(silent) innerList.clear() else values.toList().forEach(this::remove)
     }
 
     fun dispose() {

@@ -13,7 +13,7 @@ class BindableDispatcher<T> {
     }
 
     fun dispatch(value: T) {
-        listeners.forEach { listener -> listener.invoke(value) }
+        listeners.toList().forEach { listener -> listener.invoke(value) }
     }
 
     fun dispose() {

@@ -1,5 +1,6 @@
 import cz.lukynka.bindables.BindableDispatcher
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.assertDoesNotThrow
 import kotlin.test.AfterTest
 import kotlin.test.BeforeTest
 import kotlin.test.Test
@@ -19,6 +20,20 @@ class BindableDispatcherTest {
     @AfterTest
     fun after() {
         dispatcher.dispose()
+    }
+
+    @Test
+    fun testSelfDisposing() {
+        dispatcher = BindableDispatcher()
+        receivedValues = mutableListOf()
+
+        assertDoesNotThrow {
+            dispatcher.register { _ ->
+                dispatcher.dispose()
+            }
+
+            dispatcher.dispatch(5)
+        }
     }
 
     @Test
