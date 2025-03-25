@@ -27,6 +27,11 @@ tasks.withType<Test> {
     })
 }
 
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
 tasks {
     compileKotlin {
         kotlinOptions.jvmTarget = "21"
