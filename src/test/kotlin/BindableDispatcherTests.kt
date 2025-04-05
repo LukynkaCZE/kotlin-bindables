@@ -28,7 +28,7 @@ class BindableDispatcherTest {
         receivedValues = mutableListOf()
 
         assertDoesNotThrow {
-            dispatcher.register { _ ->
+            dispatcher.subscribe { _ ->
                 dispatcher.dispose()
             }
 
@@ -38,7 +38,7 @@ class BindableDispatcherTest {
 
     @Test
     fun `register and dispatch`() {
-        dispatcher.register { event ->
+        dispatcher.subscribe { event ->
             receivedValues.add(event)
         }
 
@@ -51,12 +51,12 @@ class BindableDispatcherTest {
 
     @Test
     fun `unregister listener`() {
-        val listener = dispatcher.register { event ->
+        val listener = dispatcher.subscribe { event ->
             receivedValues.add(event)
         }
 
         dispatcher.dispatch(10)
-        dispatcher.unregister(listener)
+        dispatcher.unsubscribe(listener)
         dispatcher.dispatch(20)
 
         assertEquals(listOf(10), receivedValues)
@@ -65,11 +65,11 @@ class BindableDispatcherTest {
 
     @Test
     fun `multiple listeners`() {
-        val listener1 = dispatcher.register { event ->
+        val listener1 = dispatcher.subscribe { event ->
             receivedValues.add(event)
         }
 
-        val listener2 = dispatcher.register { event ->
+        val listener2 = dispatcher.subscribe { event ->
             receivedValues.add(event * 2)
         }
 
@@ -80,7 +80,7 @@ class BindableDispatcherTest {
 
     @Test
     fun `dispose clears listeners`() {
-        val listener = dispatcher.register { event ->
+        val listener = dispatcher.subscribe { event ->
             receivedValues.add(event)
         }
 
@@ -94,22 +94,22 @@ class BindableDispatcherTest {
     @Test
     fun `register returns the same listener`() {
         val listener: (Int) -> Unit = { receivedValues.add(it) }
-        val registeredListener = dispatcher.register(listener)
+        val registeredListener = dispatcher.subscribe(listener)
         assertEquals(listener, registeredListener)
         dispatcher.dispose()
     }
 
     @Test
     fun `unregister removes only the specified listener`() {
-        val listener1 = dispatcher.register { event ->
+        val listener1 = dispatcher.subscribe { event ->
             receivedValues.add(event)
         }
 
-        dispatcher.register { event ->
+        dispatcher.subscribe { event ->
             receivedValues.add(event * 2)
         }
 
-        dispatcher.unregister(listener1)
+        dispatcher.unsubscribe(listener1)
         dispatcher.dispatch(5)
 
         assertEquals(listOf(10), receivedValues)

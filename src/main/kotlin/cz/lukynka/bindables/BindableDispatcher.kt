@@ -3,12 +3,14 @@ package cz.lukynka.bindables
 class BindableDispatcher<T> {
     private var listeners: MutableList<(T) -> Unit> = mutableListOf()
 
-    fun register(unit: (T) -> Unit): (T) -> Unit {
+    val subscriberSize: Int get() = listeners.size
+
+    fun subscribe(unit: (T) -> Unit): (T) -> Unit {
         listeners.add(unit)
         return unit
     }
 
-    fun unregister(unit: (T) -> Unit) {
+    fun unsubscribe(unit: (T) -> Unit) {
         listeners.remove(unit)
     }
 
