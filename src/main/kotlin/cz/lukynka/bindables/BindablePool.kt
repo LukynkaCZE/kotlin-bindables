@@ -7,7 +7,7 @@ class BindablePool {
     private val bindableMaps: MutableList<BindableMap<*, *>> = mutableListOf()
     private val bindableListeners: MutableList<BindableDispatcher<*>> = mutableListOf()
 
-    fun <T> provideBindableListener(): BindableDispatcher<T> {
+    fun <T> provideBindableDispatcher(): BindableDispatcher<T> {
         val listener = BindableDispatcher<T>()
         bindableListeners.add(listener)
         return listener

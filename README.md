@@ -4,15 +4,17 @@ bindables library for kotlin inspired by the [osu!framework](https://github.com/
 ## what are bindables
 
 Bindables are objects that hold a value and provide following listeners:
-- Bindable
+- `Bindable<T>`
   - value change
-- BindableList
+- `BindableList<T>`
   - value added to list
   - value removed from list
   - value set by index in list
-- BindableMap
+  - list updated
+- `BindableMap<K, V>`
   - value set
   - value removed
+  - map updated
 
 ## Installation
 
@@ -27,7 +29,7 @@ repositories {
 }
 
 dependencies {
-    implementation("cz.lukynka:kotlin-bindables:1.5")
+    implementation("cz.lukynka:kotlin-bindables:2.0")
 }
 ```
 ---
@@ -158,6 +160,21 @@ playerHealth.value = 20
 playerHealth.dispose()
 ```
 
+### Bindable Dispatcher
+
+The Bindable dispatcher system is a local event-bus type system that sends notifications of a specified type (T).
+```kotlin
+val dispatcher = BindableDispatcher<Int>()
+
+dispatcher.subscribe { int -> // subscribe
+    println("dispatcher notification: $int")
+}
+
+dispatcher.dispatch(69) // dispatch
+```
+
+Like any other bindable, you can call `dispose` which will unsubscribe all subscribed listeners
+
 ### Bindable Pool
 
 In more complicated scenarios, you can create a `BindablePool` class which will keep track of all your bindables:
@@ -204,6 +221,6 @@ On all the types, you can also use `.triggerUpdate()` to call the listeners with
 
 Both `BindableList` and `BindableMap` have `.addIfNotPresent(value)` and `.removeIfPresent(value)` functions
 
-All of the bindable types provide `.setSilently(value)` which will set the value of the bindable without calling any of the listeners
+All the bindable types provide `.setSilently(value)` which will set the value of the bindable without calling any of the listeners
 
 ---

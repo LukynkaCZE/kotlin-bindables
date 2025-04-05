@@ -1,5 +1,11 @@
 package cz.lukynka.bindables
 
 fun main() {
-    // hi :3
+    val dispatcher = BindableDispatcher<Int>()
+
+    dispatcher.subscribe { int ->
+        println("dispatcher notification: $int")
+    }
+
+    dispatcher.dispatch(69)
 }
